@@ -1,4 +1,8 @@
-Varchar2 Fixer
+Automatic PL/SQL Code Checks and Edits
+(just testing the CodeWalker class in plsql-parser)
+
+
+class spinat.plsqlchecks.Varchar2 Fixer
 
 This program fixes declarations of kind varchar2(23) to varchar2(23 char).
 Of course char() and varchar() are also handled.
@@ -7,7 +11,7 @@ Call
 dir <directoryname>
 
 fixes all files in dirextory and replaces the files in place.
-You art using source control?
+You are using source control?
 
 
 Given a file name, detremine what the contents are: spec or body and then
@@ -22,4 +26,27 @@ Of course it would be simpler to do this with a regular expression.
 But this is a test for the pl/sql parser.
 
 And now I have a simple CodeWalker.
+
+class spinat.plsqlchecks.WhenOthersThenBad
+
+works on a directory
+
+complains about exception handlers 
+
+when others then null;
+
+just reraising teh exception
+when others then raise;
+
+
+just logging and the raise ...
+when others then
+  logging.log_info(...)  (or something similar)
+  ...
+  raise;  
+end;
+
+
+
+
 
