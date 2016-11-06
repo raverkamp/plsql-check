@@ -1,0 +1,6 @@
+/build/*
+/build/classes/*
+/nbproject/private/*
+/dist/
+/.gitte/*
+/nbproject/genfiles.properties
