@@ -14,7 +14,7 @@ fixes all files in dirextory and replaces the files in place.
 You are using source control?
 
 Given a file name, determine what the contents are: spec or body and then
-retrive all varchar() declarations. 
+retrieve all varchar() declarations. 
 These can occur as 
   variable type,
   record field,
@@ -41,3 +41,9 @@ when others then
   ...
   raise;  
 end;
+
+class ToLargeNodataFound
+comßplain about blocks with a no_data_found handler
+which are to "large", meaning the ycotian several select statements
+or another block
+

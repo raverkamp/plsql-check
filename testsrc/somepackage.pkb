@@ -36,4 +36,16 @@ begin
   end;
 end;
 
+procedure bla is
+begin
+  bla1;
+  bla2;
+  select * from dual;
+  select * from dual;
+
+exception 
+when no_data_found then 
+  null;
+end;
+
 end;
