@@ -91,12 +91,12 @@ public class ToNumberNoNLS {
         @Override
         public void walkExpression(Ast.Expression expr) {
             if (expr instanceof Ast.VarOrCallExpression) {
-              
+
                 Ast.VarOrCallExpression c = (Ast.VarOrCallExpression) expr;
                 if (c.callparts.size() == 2
                         && c.callparts.get(0) instanceof Ast.Component
                         && c.callparts.get(1) instanceof Ast.CallOrIndexOp) {
-                    
+
                     Ast.Component co = (Ast.Component) c.callparts.get(0);
                     Ast.CallOrIndexOp f = (Ast.CallOrIndexOp) c.callparts.get(1);
                     //System.out.println(co.ident.val+ " " + f.params.size());

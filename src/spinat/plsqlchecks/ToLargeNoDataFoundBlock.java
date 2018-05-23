@@ -112,7 +112,6 @@ public class ToLargeNoDataFoundBlock {
 
     // count the direct sql statements in a block which has no_data_found exception handler
     // wrapping no data found around a block is clearly bad
-    
     static class BadStatementCounter extends CodeWalker {
 
         public int counter = 0;
@@ -125,17 +124,17 @@ public class ToLargeNoDataFoundBlock {
             }
             super.walkStatement(s);
         }
+
         @Override
         public void walkBlock(Ast.Block b) {
-            counter+=2;
+            counter += 2;
         }
-        
 
         @Override
         public void walkDeclaration(Ast.Declaration d) {
             //     
         }
-        
+
         @Override
         public void walkExpression(Ast.Expression e) {
             //     

@@ -78,13 +78,12 @@ public class WhenOthersThenBad {
         } else {
             System.out.println("skipping");
         }
-
     }
-    
+
     // fixme, this simple but slow
-    public static int findLineInString(String str,int pos) {
+    public static int findLineInString(String str, int pos) {
         int res = 1;
-        for(int i=0;i<str.length();i++) {
+        for (int i = 0; i < str.length(); i++) {
             if (pos < i) {
                 return res;
             }
@@ -98,11 +97,11 @@ public class WhenOthersThenBad {
     static class Walker extends CodeWalker {
 
         String source;
-        
+
         int line(int pos) {
             return findLineInString(source, pos);
         }
-        
+
         @Override
         public void walkBlock(Ast.Block block) {
             super.walkBlock(block);
@@ -126,7 +125,7 @@ public class WhenOthersThenBad {
                     if (stml.get(stml.size() - 1) instanceof Ast.RaiseStatement) {
                         Ast.RaiseStatement rs = (Ast.RaiseStatement) stml.get(stml.size() - 1);
                         if (rs.name == null) {
-                           System.out.println("  stupid logging and raise exception handler at line: " + line(stml.get(0).getStart()));
+                            System.out.println("  stupid logging and raise exception handler at line: " + line(stml.get(0).getStart()));
                         } else {
                             System.out.println("  almost stupid logging and raise exception handler at line: " + line(stml.get(0).getStart()));
                         }
