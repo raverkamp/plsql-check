@@ -5,19 +5,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import spinat.plsqlchecks.CodeWalkerWithSource.Note;
 import spinat.plsqlparser.Ast;
 import spinat.plsqlparser.Ast.Component;
-import spinat.plsqlparser.CodeWalker;
 import spinat.plsqlparser.Parser;
 import spinat.plsqlparser.Scanner;
-import spinat.plsqlparser.Seq;
-import spinat.plsqlparser.Token;
 
 public class WhenOthersThenBad {
-
-    static final String charSet = "utf-8";
 
     static boolean isLoggingStatement(Ast.Statement stm) {
         if (!(stm instanceof Ast.ProcedureCall)) {
@@ -30,17 +25,6 @@ public class WhenOthersThenBad {
         } else {
             return false;
         }
-    }
-
-    static Seq scan(String s) {
-        ArrayList<Token> a = Scanner.scanAll(s);
-        ArrayList<Token> r = new ArrayList<>();
-        for (Token t : a) {
-            if (Scanner.isRelevant(t)) {
-                r.add(t);
-            }
-        }
-        return new Seq(r);
     }
 
     public static void main(String[] args) throws IOException {
@@ -60,17 +44,19 @@ public class WhenOthersThenBad {
     public static void checkFile(Path path) throws IOException {
         Parser p = new Parser();
         System.out.println("doing file: " + path.getFileName().toString());
-        String source = new String(java.nio.file.Files.readAllBytes(path), charSet);
+        String source = Util.readFile(path);
         String su = source.toUpperCase();
         int pa = su.indexOf("PACKAGE");
         int pb = su.indexOf("BODY");
 
         if (pa >= 0 && pb >= pa && pb <= 50) {
             try {
-                Ast.PackageBody b = p.pCRPackageBody.pa(scan(source)).v;
-                Walker w = new Walker();
-                w.source = source;
+                Ast.PackageBody b = p.pCRPackageBody.pa(Scanner.scanToSeq(source)).v;
+                WhenOthersThenBadWalker w = new WhenOthersThenBadWalker(source);
                 w.walkPackageBody(b);
+                for (Note note : w.getNotes()) {
+                    System.out.println(note.line + " " + note.bla);
+                }
             } catch (Exception ex) {
                 System.out.println("   Exception " + ex.toString());
                 ex.printStackTrace(System.out);
@@ -80,26 +66,10 @@ public class WhenOthersThenBad {
         }
     }
 
-    // fixme, this simple but slow
-    public static int findLineInString(String str, int pos) {
-        int res = 1;
-        for (int i = 0; i < str.length(); i++) {
-            if (pos < i) {
-                return res;
-            }
-            if (str.charAt(i) == 10) {
-                res++;
-            }
-        }
-        throw new RuntimeException("not found");
-    }
+    static class WhenOthersThenBadWalker extends CodeWalkerWithSource {
 
-    static class Walker extends CodeWalker {
-
-        String source;
-
-        int line(int pos) {
-            return findLineInString(source, pos);
+        public WhenOthersThenBadWalker(String source) {
+            super(source);
         }
 
         @Override
@@ -110,10 +80,10 @@ public class WhenOthersThenBad {
                 if (stml.size() == 1) {
                     Ast.Statement stm = stml.get(0);
                     if (stm instanceof Ast.NullStatement) {
-                        System.out.println("  stupid null exception handler at line: " + line(stm.getStart()));
+                        this.takeNoteAtPos(stm.getStart(), "stupid null exception handler");
                     }
                     if (stm instanceof Ast.RaiseStatement) {
-                        System.out.println("  stupid raise exception handler at line: " + line(stm.getStart()));
+                        this.takeNoteAtPos(stm.getStart(), "stupid raise exception handler");
                     }
                 } else {
                     for (int i = 0; i < stml.size() - 1; i++) {
@@ -125,9 +95,9 @@ public class WhenOthersThenBad {
                     if (stml.get(stml.size() - 1) instanceof Ast.RaiseStatement) {
                         Ast.RaiseStatement rs = (Ast.RaiseStatement) stml.get(stml.size() - 1);
                         if (rs.name == null) {
-                            System.out.println("  stupid logging and raise exception handler at line: " + line(stml.get(0).getStart()));
+                            this.takeNoteAtPos(stml.get(0).getStart(), "stupid logging and raise exception handler");
                         } else {
-                            System.out.println("  almost stupid logging and raise exception handler at line: " + line(stml.get(0).getStart()));
+                            this.takeNoteAtPos(stml.get(0).getStart(), "almost stupid logging and raise exception handler");
                         }
                     }
                 }

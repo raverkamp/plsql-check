@@ -12,20 +12,8 @@ import spinat.plsqlparser.Res;
 import spinat.plsqlparser.ScanException;
 import spinat.plsqlparser.Scanner;
 import spinat.plsqlparser.Seq;
-import spinat.plsqlparser.Token;
 
 public class Varchar2Fix {
-
-    static Seq scan(String s) {
-        ArrayList<Token> a = Scanner.scanAll(s);
-        ArrayList<Token> r = new ArrayList<>();
-        for (Token t : a) {
-            if (Scanner.isRelevant(t)) {
-                r.add(t);
-            }
-        }
-        return new Seq(r);
-    }
 
     public static void main(String[] args) throws IOException {
         if (args.length >= 1 && args[0].equals("dir")) {
@@ -62,7 +50,6 @@ public class Varchar2Fix {
                 String source = new String(java.nio.file.Files.readAllBytes(path), charSet);
                 String patched = null;
                 try {
-                    Seq seq = scan(source);
                     int pt = source.toUpperCase().indexOf("TYPE");
                     // if word type appears in the first 40 character, assume this 
                     // file contains a type definition
@@ -93,7 +80,7 @@ public class Varchar2Fix {
 
     public static String patchBody(String source) {
         Parser parser = new Parser();
-        Seq seq = scan(source);
+        Seq seq = Scanner.scanToSeq(source);
         Res<Ast.PackageBody> r = parser.pCRPackageBody.pa(seq);
         Walker ex = new Walker();
         ex.walkPackageBody(r.v);
@@ -109,7 +96,7 @@ public class Varchar2Fix {
 
     public static String patchSpec(String source) {
         Parser parser = new Parser();
-        Seq seq = scan(source);
+        Seq seq = Scanner.scanToSeq(source);
         Res<Ast.PackageSpec> r = parser.pCRPackage.pa(seq);
         if (r == null) {
             System.out.println(source.substring(0, 200));

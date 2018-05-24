@@ -5,28 +5,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import spinat.plsqlchecks.CodeWalkerWithSource.Note;
 import spinat.plsqlparser.Ast;
 import spinat.plsqlparser.CodeWalker;
 import spinat.plsqlparser.Parser;
 import spinat.plsqlparser.Scanner;
-import spinat.plsqlparser.Seq;
-import spinat.plsqlparser.Token;
 
 public class ToLargeNoDataFoundBlock {
-
-    static final String charSet = "utf-8";
-
-    static Seq scan(String s) {
-        ArrayList<Token> a = Scanner.scanAll(s);
-        ArrayList<Token> r = new ArrayList<>();
-        for (Token t : a) {
-            if (Scanner.isRelevant(t)) {
-                r.add(t);
-            }
-        }
-        return new Seq(r);
-    }
 
     public static void main(String[] args) throws IOException {
         checkDir(args[0]);
@@ -45,17 +30,19 @@ public class ToLargeNoDataFoundBlock {
     public static void checkFile(Path path) throws IOException {
         Parser p = new Parser();
         System.out.println("doing file: " + path.getFileName().toString());
-        String source = new String(java.nio.file.Files.readAllBytes(path), charSet);
+        String source = Util.readFile(path);
         String su = source.toUpperCase();
         int pa = su.indexOf("PACKAGE");
         int pb = su.indexOf("BODY");
 
         if (pa >= 0 && pb >= pa && pb <= 50) {
             try {
-                Ast.PackageBody b = p.pCRPackageBody.pa(scan(source)).v;
-                NoDataFoundWalker w = new NoDataFoundWalker();
-                w.source = source;
+                Ast.PackageBody b = p.pCRPackageBody.pa(Scanner.scanToSeq(source)).v;
+                NoDataFoundWalker w = new NoDataFoundWalker(source);
                 w.walkPackageBody(b);
+                for (Note note : w.getNotes()) {
+                    System.out.println("" + note.line + " " + note.bla);
+                }
             } catch (Exception ex) {
                 System.out.println("   Exception " + ex.toString());
                 ex.printStackTrace(System.out);
@@ -66,26 +53,10 @@ public class ToLargeNoDataFoundBlock {
 
     }
 
-    // fixme, this simple but slow
-    public static int findLineInString(String str, int pos) {
-        int res = 1;
-        for (int i = 0; i < str.length(); i++) {
-            if (pos < i) {
-                return res;
-            }
-            if (str.charAt(i) == 10) {
-                res++;
-            }
-        }
-        throw new RuntimeException("not found");
-    }
+    static class NoDataFoundWalker extends CodeWalkerWithSource {
 
-    static class NoDataFoundWalker extends CodeWalker {
-
-        String source;
-
-        int line(int pos) {
-            return findLineInString(source, pos);
+        public NoDataFoundWalker(String source) {
+            super(source);
         }
 
         @Override
@@ -100,8 +71,8 @@ public class ToLargeNoDataFoundBlock {
                             BadStatementCounter bsc = new BadStatementCounter();
                             bsc.walkStatements(block.statements);
                             if (bsc.counter > 1) {
-                                System.out.println("  to large block for no_data_found handler: "
-                                        + line(block.statements.get(0).getStart()));
+                                this.takeNoteAtPos(block.statements.get(0).getStart(),
+                                        "to large block for no_data_found handler");
                             }
                         }
                     }
