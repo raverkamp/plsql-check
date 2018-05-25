@@ -13,8 +13,6 @@ import spinat.plsqlparser.Seq;
 
 public class ToNumberNoNLS {
 
-    static final String charSet = "ISO_8859_1";
-
     public static void main(String[] args) throws IOException {
         checkDir(args[0]);
     }
@@ -32,7 +30,7 @@ public class ToNumberNoNLS {
     public static void checkFile(Path path) throws IOException {
         Parser p = new Parser();
         System.out.println("doing file: " + path.getFileName().toString());
-        String source = new String(java.nio.file.Files.readAllBytes(path), charSet);
+        String source = Util.readFile(path);
         String su = source.toUpperCase();
         int pa = su.indexOf("PACKAGE");
         int pb = su.indexOf("BODY");
@@ -43,9 +41,7 @@ public class ToNumberNoNLS {
                 Ast.PackageBody b = p.pCRPackageBody.pa(seq).v;
                 ToNumberNoNLSWalker w = new ToNumberNoNLSWalker(source);
                 w.walkPackageBody(b);
-                for(Note note: w.getNotes()) {
-                    System.out.println(note.line + " " + note.bla);
-                }
+                w.report(System.out);
             } catch (Exception ex) {
                 System.out.println("   Exception " + ex.toString());
                 ex.printStackTrace(System.out);

@@ -54,9 +54,7 @@ public class WhenOthersThenBad {
                 Ast.PackageBody b = p.pCRPackageBody.pa(Scanner.scanToSeq(source)).v;
                 WhenOthersThenBadWalker w = new WhenOthersThenBadWalker(source);
                 w.walkPackageBody(b);
-                for (Note note : w.getNotes()) {
-                    System.out.println(note.line + " " + note.bla);
-                }
+                w.report(System.out);
             } catch (Exception ex) {
                 System.out.println("   Exception " + ex.toString());
                 ex.printStackTrace(System.out);
